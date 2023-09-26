@@ -9,7 +9,7 @@ use {
     syn,
 };
 
-#[proc_macro_derive(RuleContainer)]
+#[proc_macro_derive(VoltModuleDefinition)]
 pub fn module_fn_derive(input: TokenStream) -> TokenStream {
     let ast = syn::parse(input).unwrap();
     impl_module_fn_macro(&ast)
@@ -83,7 +83,7 @@ fn generate_module_assist_impl(item_name: &proc_macro2::Ident, fields: &syn::pun
     joined_pushes.append_all(pushes);
 
     quote!{
-        impl ModuleAssist for #item_name {
+        impl VoltModuleAssist for #item_name {
             fn into_rule_vec(self) -> RuleVec {
                 let mut rules = Vec::new();
                 #joined_pushes
