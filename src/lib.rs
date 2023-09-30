@@ -1,21 +1,14 @@
 extern crate proc_macro;
 
-use {
-    proc_macro::TokenStream,
-    quote::{
-        quote,
-        TokenStreamExt,
-    },
-    syn,
-};
+use quote::TokenStreamExt;
 
 #[proc_macro_derive(VoltModuleDefinition)]
-pub fn module_fn_derive(input: TokenStream) -> TokenStream {
+pub fn module_fn_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let ast = syn::parse(input).unwrap();
     impl_module_fn_macro(&ast)
 }
 
-fn impl_module_fn_macro(ast: &syn::DeriveInput) -> TokenStream {
+fn impl_module_fn_macro(ast: &syn::DeriveInput) -> proc_macro::TokenStream {
     let item_name = &ast.ident;
 
     let fields = match &ast.data {
@@ -31,7 +24,7 @@ fn impl_module_fn_macro(ast: &syn::DeriveInput) -> TokenStream {
     let self_impl = generate_self_impl(item_name, fields);
     let module_assist_impl = generate_module_assist_impl(item_name, fields);
 
-    let gen = quote!{
+    let gen = quote::quote!{
         #self_impl
         #module_assist_impl
     };
@@ -48,17 +41,17 @@ fn generate_self_impl(item_name: &proc_macro2::Ident, fields: &syn::punctuated::
 
         let rule_id = format!("{}::{}", item_name, rule_name);
 
-        quote!{
+        quote::quote!{
             pub fn #rule_name() -> Element {
                 Element::Expression(Expression::Rule(RuleId(#rule_id.to_string())))
             }
         }
     }).collect::<Vec<proc_macro2::TokenStream>>();
 
-    let mut joined_elem_fns: proc_macro2::TokenStream = quote!{};
+    let mut joined_elem_fns: proc_macro2::TokenStream = quote::quote!{};
     joined_elem_fns.append_all(elem_fns);
 
-    quote!{
+    quote::quote!{
         impl #item_name {
             #joined_elem_fns
         }
@@ -74,15 +67,15 @@ fn generate_module_assist_impl(item_name: &proc_macro2::Ident, fields: &syn::pun
 
         let rule_id = format!("{}::{}", item_name, rule_name);
 
-        quote!{
+        quote::quote!{
             rules.push(Rule::new(RuleId(#rule_id.to_string()), self.#rule_name.clone()).detect_left_recursion());
         }
     }).collect::<Vec<proc_macro2::TokenStream>>();
 
-    let mut joined_pushes = quote!{};
+    let mut joined_pushes = quote::quote!{};
     joined_pushes.append_all(pushes);
 
-    quote!{
+    quote::quote!{
         impl VoltModuleAssist for #item_name {
             fn into_rule_vec(self) -> RuleVec {
                 let mut rules = Vec::new();
