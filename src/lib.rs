@@ -42,8 +42,8 @@ fn generate_self_impl(item_name: &proc_macro2::Ident, fields: &syn::punctuated::
         let rule_id = format!("{}::{}", item_name, rule_name);
 
         quote::quote!{
-            pub fn #rule_name() -> Element {
-                Element::Expression(Expression::Rule(RuleId(#rule_id.to_string())))
+            pub fn #rule_name() -> volt::element::Element {
+                volt::element::Element::Expression(volt::element::Expression::Rule(volt::rule::RuleId(#rule_id.to_string())))
             }
         }
     }).collect::<Vec<proc_macro2::TokenStream>>();
@@ -68,7 +68,7 @@ fn generate_module_assist_impl(item_name: &proc_macro2::Ident, fields: &syn::pun
         let rule_id = format!("{}::{}", item_name, rule_name);
 
         quote::quote!{
-            rules.push(Rule::new(RuleId(#rule_id.to_string()), self.#rule_name.clone()).detect_left_recursion());
+            rules.push(volt::rule::Rule::new(volt::rule::RuleId(#rule_id.to_string()), self.#rule_name.clone()).detect_left_recursion());
         }
     }).collect::<Vec<proc_macro2::TokenStream>>();
 
@@ -76,11 +76,11 @@ fn generate_module_assist_impl(item_name: &proc_macro2::Ident, fields: &syn::pun
     joined_pushes.append_all(pushes);
 
     quote::quote!{
-        impl VoltModuleAssist for #item_name {
-            fn into_rule_vec(self) -> RuleVec {
+        impl volt::VoltModuleAssist for #item_name {
+            fn into_rule_vec(self) -> volt::rule::RuleVec {
                 let mut rules = Vec::new();
                 #joined_pushes
-                RuleVec(rules)
+                volt::rule::RuleVec(rules)
             }
         }
     }
